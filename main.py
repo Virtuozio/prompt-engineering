@@ -17,22 +17,30 @@ if not api_key:
 genai.configure(api_key=api_key)
 
 # --- ЗАВАНТАЖЕННЯ ДАНИХ ---
-try:
-    with open("knowledge.txt", "r", encoding="utf-8") as f:
-        knowledge_text = f.read()
-    print("✅ Дані завантажено успішно.")
-except FileNotFoundError:
-    raise FileNotFoundError("❌ Файл knowledge.txt не знайдено!")
-print(knowledge_text[:200])  # Можна розкоментувати для перевірки
+file_names = ["knowledge.txt", "knowledge2.txt", "knowledge3.txt"]  # список файлів
+texts = []
+
+for fname in file_names:
+    try:
+        with open(fname, "r", encoding="utf-8") as f:
+            texts.append(f.read())
+        print(f"✅ Файл {fname} завантажено.")
+    except FileNotFoundError:
+        print(f"⚠️ Файл {fname} не знайдено, пропускаю.")
+
+# Об'єднуємо всі тексти в один
+knowledge_text = "\n".join(texts)
+print("✅ Всі тексти об’єднано.")
+print(knowledge_text[:300])  # для перевірки
 
 # --- РОЗБИТТЯ НА ЧАНКИ ---
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000,  # Розмір одного чанка в символах
-    chunk_overlap=100,  # Перекриття між чанками
+    chunk_size=1000,
+    chunk_overlap=100,
 )
 
 chunks = text_splitter.split_text(knowledge_text)
-print(f"✅ Документ розбито на {len(chunks)} чанків.")
+print(f"✅ Документи розбито на {len(chunks)} чанків.")
 print(chunks[0])  # Можна розкоментувати для перевірки
 
 
@@ -61,7 +69,7 @@ collection.add(
 print("✅ Векторну базу даних створено та наповнено.")
 
 # --- ПОШУК ТА ГЕНЕРАЦІЯ ---
-query = "Які Критерії та порядок оцінювання результатів навчання ?"
+query = "Що є неприпустимим  у використанні ШІ?"
 print(f"\n✅ Запит користувача: {query}")
 
 # 1. Створюємо ембединг для запиту
