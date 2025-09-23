@@ -59,3 +59,45 @@ collection.add(
 )
 
 print("✅ Векторну базу даних створено та наповнено.")
+
+# --- ПОШУК ТА ГЕНЕРАЦІЯ ---
+query = "Які Критерії та порядок оцінювання результатів навчання ?"
+print(f"\n✅ Запит користувача: {query}")
+
+# 1. Створюємо ембединг для запиту
+query_embedding = genai.embed_content(
+    model=embedding_model, content=query, task_type="retrieval_query"
+)["embedding"]
+
+# 2. Шукаємо релевантні чанки у векторній БД
+results = collection.query(
+    query_embeddings=[query_embedding],
+    n_results=3,  # Кількість найбільш релевантних чанків
+)
+
+retrieved_documents = results["documents"][0]
+context = "\n".join(retrieved_documents)
+
+print("\n📚 Знайдений контекст:")
+print(context)
+
+# 3. Формуємо фінальний промпт
+final_prompt = f"""
+Ти - чат-бот-консультант по робочій програмі курсу "Prompt інжиніринг".
+Твоя задача - чітко відповідати на питання студента, базуючись **виключно** на наданому контексті.
+Якщо відповіді немає в контексті, так і скажи:
+"На жаль, у наданих матеріалах немає інформації на це питання."
+
+**Контекст:**
+{context}
+
+**Запитання:**
+{query}
+"""
+
+# 4. Генеруємо відповідь
+generative_model = genai.GenerativeModel("gemini-2.5-flash")
+response = generative_model.generate_content(final_prompt)
+
+print("\n🤖 Відповідь ШІ:")
+print(response.text)
