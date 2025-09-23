@@ -45,3 +45,17 @@ embeddings = genai.embed_content(
 
 print(f"✅ Створено {len(embeddings)} векторних представлень.")
 print(embeddings[0][:5])  # Можна розкоментувати для перевірки
+
+# --- СТВОРЕННЯ ВЕКТОРНОЇ БД ---
+client = chromadb.Client()
+
+collection = client.get_or_create_collection("course_syllabus")
+
+# Додаємо наші чанки та їх ембединги до колекції
+collection.add(
+    ids=[str(i) for i in range(len(chunks))],  # ID для кожного чанка
+    embeddings=embeddings,
+    documents=chunks,
+)
+
+print("✅ Векторну базу даних створено та наповнено.")
